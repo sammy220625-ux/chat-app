@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import {
   View, Text, FlatList, Image, Pressable, StyleSheet, KeyboardAvoidingView,
 } from "react-native";
@@ -9,7 +9,8 @@ import MessageBubble from "../../src/components/chat/MessageBubble";
 import MessageInput from "../../src/components/chat/MessageInput";
 import { mockUsers } from "../../src/data/mockUsers";
 import { mockMessages } from "../../src/data/mockMessages";
-import { Message } from "../../src/types";
+import { Message, User } from "../../src/types";
+import { supabase } from "../../src/services/supabase";
 import { colors } from "../../src/constants/theme";
 
 const nowTime = () => {
@@ -24,7 +25,28 @@ export default function ChatScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const listRef = useRef<FlatList<Message>>(null);
-  const user = mockUsers.find((u) => u.id === id);
+  const mockUser = mockUsers.find((u) => u.id === id);
+  const [fetched, setFetched] = useState<User | null>(null);
+  useEffect(() => {
+    if (mockUser || !id) return;
+    supabase
+      .from("profiles")
+      .select("id, name, avatar_url, is_verified")
+      .eq("id", id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) {
+          setFetched({
+            id: data.id,
+            name: data.name,
+            avatar: data.avatar_url ?? `https://i.pravatar.cc/200?u=${data.id}`,
+            isVerified: data.is_verified,
+            isOnline: false,
+          });
+        }
+      });
+  }, [id, mockUser]);
+  const user = mockUser ?? fetched ?? undefined;
   const [messages, setMessages] = useState<Message[]>(mockMessages);
 
   const handleSend = useCallback((text: string) => {

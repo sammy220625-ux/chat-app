@@ -1,30 +1,66 @@
-import { useRouter } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  View, Text, FlatList, Pressable, StyleSheet,
-  StatusBar, Platform, RefreshControl, Alert,
+  View, Text, FlatList, Pressable, StyleSheet, StatusBar, Platform,
+  RefreshControl, Alert, ActivityIndicator,
 } from "react-native";
+import { useRouter } from "expo-router";
 import CategoryBar from "../components/discover/CategoryBar";
 import UserCard from "../components/discover/UserCard";
-import { mockUsers } from "../data/mockUsers";
+import { supabase } from "../services/supabase";
+import { useProfileStore } from "../store/profileStore";
+import { User } from "../types";
 import { colors } from "../constants/theme";
 
 type Tab = "forYou" | "nearby";
 
 export default function DiscoverScreen() {
   const router = useRouter();
+  const myId = useProfileStore((s) => s.profile.id);
   const [tab, setTab] = useState<Tab>("forYou");
+  const [allUsers, setAllUsers] = useState<User[]>([]);
   const [hiSent, setHiSent] = useState<Set<string>>(new Set());
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  const loadUsers = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("id, name, bio, avatar_url, is_verified, vip_level")
+      .order("created_at", { ascending: false })
+      .limit(50);
+    if (error) {
+      setLoadError("โหลดรายชื่อไม่สำเร็จ ลองดึงลงเพื่อรีเฟรช");
+      return;
+    }
+    setLoadError(null);
+    setAllUsers(
+      (data ?? [])
+        .filter((r) => r.id !== myId)
+        .map((r) => ({
+          id: r.id,
+          name: r.name,
+          bio: r.bio,
+          avatar: r.avatar_url ?? `https://i.pravatar.cc/200?u=${r.id}`,
+          isVerified: r.is_verified,
+          vipLevel: r.vip_level > 0 ? r.vip_level : undefined,
+          isOnline: false,
+        }))
+    );
+  }, [myId]);
+
+  useEffect(() => {
+    loadUsers().finally(() => setLoading(false));
+  }, [loadUsers]);
 
   const users = useMemo(() => {
     if (tab === "nearby") {
-      return mockUsers
+      return allUsers
         .filter((u) => u.distanceKm !== undefined)
         .sort((a, b) => (a.distanceKm ?? 0) - (b.distanceKm ?? 0));
     }
-    return mockUsers;
-  }, [tab]);
+    return allUsers;
+  }, [tab, allUsers]);
 
   const handleHi = useCallback((id: string) => {
     setHiSent((prev) => new Set(prev).add(id));
@@ -34,10 +70,17 @@ export default function DiscoverScreen() {
     Alert.alert("เร็วๆ นี้", `หน้า "${id}" ยังไม่เปิดใช้งาน`);
   };
 
-  const onRefresh = useCallback(() => {
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 800);
-  }, []);
+    await loadUsers();
+    setRefreshing(false);
+  }, [loadUsers]);
+
+  const emptyText = loadError
+    ? loadError
+    : tab === "nearby"
+    ? "แท็บใกล้เคียงจะใช้ได้เมื่อมีข้อมูลตำแหน่งที่ตั้ง"
+    : "ยังไม่มีผู้ใช้คนอื่น ลองสมัครอีกบัญชีเพื่อทดสอบ";
 
   const Header = (
     <View>
@@ -77,7 +120,11 @@ export default function DiscoverScreen() {
           />
         )}
         ListEmptyComponent={
-          <Text style={styles.empty}>ยังไม่มีผู้ใช้ใกล้คุณ ลองดึงลงเพื่อรีเฟรช</Text>
+          loading ? (
+            <ActivityIndicator style={{ marginTop: 48 }} color={colors.primary} />
+          ) : (
+            <Text style={styles.empty}>{emptyText}</Text>
+          )
         }
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         contentContainerStyle={{ paddingBottom: 24 }}
@@ -115,5 +162,5 @@ const styles = StyleSheet.create({
   underlineActive: { backgroundColor: colors.primary },
   actions: { flexDirection: "row", gap: 16 },
   actionIcon: { fontSize: 26 },
-  empty: { textAlign: "center", color: colors.subText, marginTop: 48 },
+  empty: { textAlign: "center", color: colors.subText, marginTop: 48, paddingHorizontal: 24 },
 });

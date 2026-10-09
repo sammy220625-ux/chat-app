@@ -1,7 +1,7 @@
 export type User = {
   id: string;
   name: string;
-  age: number;
+  age?: number;
   avatar: string;
   bio?: string;
   distanceKm?: number;

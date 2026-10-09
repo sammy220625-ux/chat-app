@@ -17,16 +17,20 @@ export default function EditProfile() {
   const [name, setName] = useState(profile.name);
   const [bio, setBio] = useState(profile.bio);
 
-  const save = () => {
+  const save = async () => {
     const trimmed = name.trim();
     if (trimmed.length < 2) {
       Alert.alert("ชื่อสั้นเกินไป", "กรุณาใส่ชื่ออย่างน้อย 2 ตัวอักษร");
       return;
     }
-    updateProfile({
+    const err = await updateProfile({
       name: trimmed,
       bio: bio.trim() || "ยังไม่ได้เขียนแนะนำตัว",
     });
+    if (err) {
+      Alert.alert("บันทึกไม่สำเร็จ", err);
+      return;
+    }
     router.back();
   };
 

@@ -30,7 +30,7 @@ export default function Me() {
         <Image source={{ uri: p.avatar }} style={styles.avatar} />
         <View style={{ flex: 1, gap: 4 }}>
           <Text style={styles.name} numberOfLines={1}>{p.name}</Text>
-          <Text style={styles.idText}>ID: {p.id}</Text>
+          <Text style={styles.idText}>ID: {p.id.slice(0, 8)}</Text>
           <Text style={styles.bio} numberOfLines={2}>{p.bio}</Text>
         </View>
         <Pressable hitSlop={10} onPress={() => router.push("/edit-profile")} accessibilityLabel="แก้ไขโปรไฟล์">

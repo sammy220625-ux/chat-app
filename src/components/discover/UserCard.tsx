@@ -47,9 +47,11 @@ export default function UserCard({ user, hiSent, onHi, onOpenChat, onOpenProfile
               <Text style={styles.chipText}>{user.distanceKm.toFixed(2)}km</Text>
             </View>
           )}
-          <View style={styles.chip}>
-            <Text style={styles.chipText}>♀ {user.age}</Text>
-          </View>
+          {user.age !== undefined && (
+            <View style={styles.chip}>
+              <Text style={styles.chipText}>♀ {user.age}</Text>
+            </View>
+          )}
         </View>
 
         {!!user.bio && <Text style={styles.bio} numberOfLines={1}>{user.bio}</Text>}
