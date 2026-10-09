@@ -17,3 +17,10 @@ export type Category = {
   emoji: string;
   colors: [string, string];
 };
+
+export type Message = {
+  id: string;
+  from: "me" | "them";
+  text: string;
+  time: string;
+};
