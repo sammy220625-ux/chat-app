@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import {
   View, Text, FlatList, Pressable, StyleSheet,
@@ -11,6 +12,7 @@ import { colors } from "../constants/theme";
 type Tab = "forYou" | "nearby";
 
 export default function DiscoverScreen() {
+  const router = useRouter();
   const [tab, setTab] = useState<Tab>("forYou");
   const [hiSent, setHiSent] = useState<Set<string>>(new Set());
   const [refreshing, setRefreshing] = useState(false);
@@ -71,7 +73,7 @@ export default function DiscoverScreen() {
             user={item}
             hiSent={hiSent.has(item.id)}
             onHi={handleHi}
-            onOpenChat={(id) => Alert.alert("แชต", `เปิดห้องแชตกับผู้ใช้ ${id}`)}
+            onOpenChat={(id) => router.push(`/chat/${id}`)}
           />
         )}
         ListEmptyComponent={

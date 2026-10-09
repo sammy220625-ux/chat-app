@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, TextInput, Pressable, StyleSheet } from "react-native";
+import { View, TextInput, Pressable, StyleSheet, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../../constants/theme";
 
@@ -12,6 +12,9 @@ export default function MessageInput({ onSend, bottomInset = 0 }: Props) {
   const [text, setText] = useState("");
   const canSend = text.trim().length > 0;
 
+  // บน Android เว้นขอบล่างอย่างน้อย 48 กันปุ่มระบบทับ แม้ระบบรายงานค่า inset เป็น 0
+  const safeBottom = Platform.OS === "android" ? Math.max(bottomInset, 48) : bottomInset;
+
   const submit = () => {
     if (!canSend) return;
     onSend(text.trim());
@@ -19,7 +22,7 @@ export default function MessageInput({ onSend, bottomInset = 0 }: Props) {
   };
 
   return (
-    <View style={[styles.bar, { paddingBottom: bottomInset + 8 }]}>
+    <View style={[styles.bar, { paddingBottom: safeBottom + 8 }]}>
       <TextInput
         style={styles.input}
         value={text}
@@ -44,8 +47,8 @@ export default function MessageInput({ onSend, bottomInset = 0 }: Props) {
 const styles = StyleSheet.create({
   bar: {
     flexDirection: "row", alignItems: "flex-end", gap: 8,
-    paddingHorizontal: 12, paddingTop: 8,
-    backgroundColor: "#fff", borderTopWidth: 1, borderTopColor: colors.chip,
+    paddingHorizontal: 12, paddingTop: 10,
+    backgroundColor: "#fff", borderTopWidth: 2, borderTopColor: colors.primary,
   },
   input: {
     flex: 1, maxHeight: 120, minHeight: 44,
