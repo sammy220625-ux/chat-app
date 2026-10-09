@@ -2,14 +2,16 @@ import { View, Text, Image, ScrollView, Pressable, Alert, StyleSheet } from "rea
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import MenuItem from "../../src/components/profile/MenuItem";
-import { mockProfile } from "../../src/data/mockProfile";
+import { useRouter } from "expo-router";
+import { useProfileStore } from "../../src/store/profileStore";
 import { colors } from "../../src/constants/theme";
 
 const soon = (title: string) => () => Alert.alert(title, "เร็วๆ นี้");
 
 export default function Me() {
   const insets = useSafeAreaInsets();
-  const p = mockProfile;
+  const p = useProfileStore((s) => s.profile);
+  const router = useRouter();
 
   const logout = () => {
     Alert.alert("ออกจากระบบ", "ต้องการออกจากระบบใช่ไหม", [
@@ -30,7 +32,7 @@ export default function Me() {
           <Text style={styles.idText}>ID: {p.id}</Text>
           <Text style={styles.bio} numberOfLines={2}>{p.bio}</Text>
         </View>
-        <Pressable hitSlop={10} onPress={soon("แก้ไขโปรไฟล์")} accessibilityLabel="แก้ไขโปรไฟล์">
+        <Pressable hitSlop={10} onPress={() => router.push("/edit-profile")} accessibilityLabel="แก้ไขโปรไฟล์">
           <Ionicons name="create-outline" size={26} color={colors.text} />
         </Pressable>
       </View>
