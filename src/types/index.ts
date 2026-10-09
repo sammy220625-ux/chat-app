@@ -24,3 +24,11 @@ export type Message = {
   text: string;
   time: string;
 };
+
+export type Conversation = {
+  id: string;
+  userId: string;
+  lastMessage: string;
+  time: string;
+  unread: number;
+};
