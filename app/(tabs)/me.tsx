@@ -5,6 +5,7 @@ import MenuItem from "../../src/components/profile/MenuItem";
 import { useRouter } from "expo-router";
 import { useProfileStore } from "../../src/store/profileStore";
 import { colors } from "../../src/constants/theme";
+import { supabase } from "../../src/services/supabase";
 
 const soon = (title: string) => () => Alert.alert(title, "เร็วๆ นี้");
 
@@ -16,7 +17,7 @@ export default function Me() {
   const logout = () => {
     Alert.alert("ออกจากระบบ", "ต้องการออกจากระบบใช่ไหม", [
       { text: "ยกเลิก", style: "cancel" },
-      { text: "ออกจากระบบ", style: "destructive", onPress: () => Alert.alert("ออกจากระบบแล้ว", "ตัวอย่างเท่านั้น") },
+      { text: "ออกจากระบบ", style: "destructive", onPress: () => { supabase.auth.signOut(); } },
     ]);
   };
 

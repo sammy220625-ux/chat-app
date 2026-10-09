@@ -1,4 +1,5 @@
-import { Tabs } from "expo-router";
+import { Redirect, Tabs } from "expo-router";
+import { useSession } from "../../src/hooks/useSession";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../../src/constants/theme";
 
@@ -13,6 +14,10 @@ const tab = (title: string, icon: IconName, iconActive: IconName, badge?: number
 });
 
 export default function TabsLayout() {
+  const { session, loading } = useSession();
+  if (loading) return null;
+  if (!session) return <Redirect href="/login" />;
+
   return (
     <Tabs
       screenOptions={{
