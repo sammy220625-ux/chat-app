@@ -2,6 +2,8 @@ import { Redirect, Tabs } from "expo-router";
 import { useSession } from "../../src/hooks/useSession";
 import { useUnreadSync } from "../../src/hooks/useUnreadSync";
 import { useUnreadStore } from "../../src/store/unreadStore";
+import { useProfileStore } from "../../src/store/profileStore";
+import { isUuid } from "../../src/services/chatService";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../../src/constants/theme";
 
@@ -19,8 +21,12 @@ export default function TabsLayout() {
   const { session, loading } = useSession();
   useUnreadSync(session?.user.id);
   const unread = useUnreadStore((s) => s.count);
+  const profile = useProfileStore((s) => s.profile);
+  const profileLoaded = useProfileStore((s) => s.loaded);
   if (loading) return null;
   if (!session) return <Redirect href="/login" />;
+  if (!profileLoaded) return null;
+  if (isUuid(profile.id) && profile.birthYear == null) return <Redirect href="/onboarding" />;
 
   return (
     <Tabs

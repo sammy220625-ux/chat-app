@@ -49,7 +49,7 @@ export default function UserCard({ user, hiSent, onHi, onOpenChat, onOpenProfile
           )}
           {user.age !== undefined && (
             <View style={styles.chip}>
-              <Text style={styles.chipText}>♀ {user.age}</Text>
+              <Text style={styles.chipText}>{user.gender === "male" ? "♂" : user.gender === "other" ? "⚧" : "♀"} {user.age}</Text>
             </View>
           )}
         </View>

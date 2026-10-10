@@ -2,6 +2,7 @@ export type User = {
   id: string;
   name: string;
   age?: number;
+  gender?: "male" | "female" | "other";
   avatar: string;
   bio?: string;
   distanceKm?: number;

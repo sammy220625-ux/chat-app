@@ -27,7 +27,7 @@ export default function DiscoverScreen() {
   const loadUsers = useCallback(async () => {
     const { data, error } = await supabase
       .from("profiles")
-      .select("id, name, bio, avatar_url, is_verified, vip_level")
+      .select("id, name, bio, avatar_url, is_verified, vip_level, gender, birth_year")
       .order("created_at", { ascending: false })
       .limit(50);
     if (error) {
@@ -47,6 +47,8 @@ export default function DiscoverScreen() {
           avatar: r.avatar_url ?? `https://i.pravatar.cc/200?u=${r.id}`,
           isVerified: r.is_verified,
           vipLevel: r.vip_level > 0 ? r.vip_level : undefined,
+          gender: r.gender ?? undefined,
+          age: r.birth_year ? new Date().getFullYear() - r.birth_year : undefined,
           isOnline: false,
         }))
     );
