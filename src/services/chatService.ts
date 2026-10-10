@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import { useUnreadStore } from "../store/unreadStore";
 import type { Message } from "../types";
 
 export type MessageRow = {
@@ -76,4 +77,5 @@ export async function markRead(myId: string, peerId: string) {
     .eq("recipient_id", myId)
     .eq("sender_id", peerId)
     .is("read_at", null);
+  useUnreadStore.getState().refresh();
 }
