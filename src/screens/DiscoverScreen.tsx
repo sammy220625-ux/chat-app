@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   View, Text, FlatList, Pressable, StyleSheet, StatusBar, Platform,
   RefreshControl, Alert, ActivityIndicator,
@@ -7,6 +7,7 @@ import { useRouter } from "expo-router";
 import CategoryBar from "../components/discover/CategoryBar";
 import UserCard from "../components/discover/UserCard";
 import { supabase } from "../services/supabase";
+import { sendMessage, isUuid } from "../services/chatService";
 import { useProfileStore } from "../store/profileStore";
 import { User } from "../types";
 import { colors } from "../constants/theme";
@@ -53,6 +54,22 @@ export default function DiscoverScreen() {
     loadUsers().finally(() => setLoading(false));
   }, [loadUsers]);
 
+  useEffect(() => {
+    if (!isUuid(myId)) return;
+    supabase
+      .from("messages")
+      .select("sender_id, recipient_id")
+      .or("sender_id.eq." + myId + ",recipient_id.eq." + myId)
+      .limit(500)
+      .then(({ data }) => {
+        if (!data) return;
+        const peers = data.map(
+          (r) => (r.sender_id === myId ? r.recipient_id : r.sender_id) as string
+        );
+        setHiSent((prev) => new Set([...prev, ...peers]));
+      });
+  }, [myId]);
+
   const users = useMemo(() => {
     if (tab === "nearby") {
       return allUsers
@@ -62,7 +79,17 @@ export default function DiscoverScreen() {
     return allUsers;
   }, [tab, allUsers]);
 
-  const handleHi = useCallback((id: string) => {
+  const pending = useRef<Set<string>>(new Set());
+
+  const handleHi = useCallback(async (id: string) => {
+    if (pending.current.has(id)) return;
+    pending.current.add(id);
+    const res = await sendMessage(id, "สวัสดี 👋");
+    pending.current.delete(id);
+    if (res.error) {
+      Alert.alert("ส่งไม่สำเร็จ", res.error);
+      return;
+    }
     setHiSent((prev) => new Set(prev).add(id));
   }, []);
 
