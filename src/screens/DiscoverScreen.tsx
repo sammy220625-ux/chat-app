@@ -3,7 +3,7 @@ import {
   View, Text, FlatList, Pressable, StyleSheet, StatusBar, Platform,
   RefreshControl, Alert, ActivityIndicator,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import CategoryBar from "../components/discover/CategoryBar";
 import UserCard from "../components/discover/UserCard";
 import { supabase } from "../services/supabase";
@@ -34,10 +34,12 @@ export default function DiscoverScreen() {
       setLoadError("โหลดรายชื่อไม่สำเร็จ ลองดึงลงเพื่อรีเฟรช");
       return;
     }
+    const { data: bl } = await supabase.from("blocks").select("blocked_id");
+    const blockedIds = new Set((bl ?? []).map((b) => b.blocked_id as string));
     setLoadError(null);
     setAllUsers(
       (data ?? [])
-        .filter((r) => r.id !== myId)
+        .filter((r) => r.id !== myId && !blockedIds.has(r.id))
         .map((r) => ({
           id: r.id,
           name: r.name,
@@ -69,6 +71,12 @@ export default function DiscoverScreen() {
         setHiSent((prev) => new Set([...prev, ...peers]));
       });
   }, [myId]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadUsers();
+    }, [loadUsers])
+  );
 
   const users = useMemo(() => {
     if (tab === "nearby") {

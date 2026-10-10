@@ -14,6 +14,7 @@ import {
   fetchMessages, sendMessage, markRead, toMessage, isUuid, MessageRow,
 } from "../../src/services/chatService";
 import { Message } from "../../src/types";
+import { blockUser } from "../../src/services/safetyService";
 import { colors } from "../../src/constants/theme";
 
 type Peer = { name: string; avatar: string };
@@ -91,6 +92,35 @@ export default function ChatScreen() {
     },
     [myId, id]
   );
+  const confirmBlock = () => {
+    if (!id) return;
+    Alert.alert(
+      "บล็อกผู้ใช้นี้?",
+      "คุณจะไม่เห็นโปรไฟล์และข้อความของเขา และข้อความจากเขาจะไม่ถึงคุณ ปลดบล็อกได้ภายหลังจากหน้า ฉัน",
+      [
+        { text: "ยกเลิก", style: "cancel" },
+        {
+          text: "บล็อก",
+          style: "destructive",
+          onPress: async () => {
+            const err = await blockUser(id);
+            if (err) Alert.alert("บล็อกไม่สำเร็จ", err);
+            else router.back();
+          },
+        },
+      ]
+    );
+  };
+
+  const openMenu = () => {
+    if (!id) return;
+    Alert.alert(peer?.name ?? "ผู้ใช้", undefined, [
+      { text: "รายงานผู้ใช้", onPress: () => router.push("/report/" + id) },
+      { text: "บล็อกผู้ใช้", style: "destructive", onPress: confirmBlock },
+      { text: "ยกเลิก", style: "cancel" },
+    ]);
+  };
+
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior="padding">
@@ -104,6 +134,9 @@ export default function ChatScreen() {
             {peer?.name ?? (loading ? "กำลังโหลด..." : "ผู้ใช้")}
           </Text>
         </View>
+        <Pressable onPress={openMenu} hitSlop={10} accessibilityLabel="ตัวเลือก">
+          <Ionicons name="ellipsis-vertical" size={22} color={colors.text} />
+        </Pressable>
       </View>
 
       {loading ? (

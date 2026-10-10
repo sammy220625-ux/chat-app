@@ -58,6 +58,7 @@ export default function Me() {
           hint={p.isVerified ? "ยืนยันแล้ว" : "ยังไม่ยืนยัน"}
           onPress={soon("ยืนยันตัวตน")}
         />
+        <MenuItem icon="ban-outline" label="ผู้ใช้ที่ถูกบล็อก" onPress={() => router.push("/blocked-users")} />
         <MenuItem icon="settings-outline" label="ตั้งค่า" onPress={soon("ตั้งค่า")} />
         <MenuItem icon="help-circle-outline" label="ช่วยเหลือ" onPress={soon("ช่วยเหลือ")} />
       </View>
