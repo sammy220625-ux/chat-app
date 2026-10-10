@@ -1,3 +1,4 @@
+import AvatarPicker from "../src/components/profile/AvatarPicker";
 import { useState } from "react";
 import {
   View, Text, TextInput, Pressable, ScrollView, Alert,
@@ -50,6 +51,7 @@ export default function EditProfile() {
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ padding: 16, paddingBottom: Math.max(insets.bottom, 48) + 24 }}
       >
+        <AvatarPicker />
         <Text style={styles.label}>ชื่อที่แสดง</Text>
         <TextInput
           style={styles.input}
